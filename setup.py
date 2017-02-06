@@ -9,11 +9,8 @@ setup(
     license='mit',
     packages=find_packages(),
     include_package_data=True,
-    package_dir={'quiver_engine': 'quiver_engine'},
-    package_data={'quiver_engine': 'quiverboard/dist/*'},
     install_requires=[
         'keras',
-        'tensorflow',
         'flask',
         'flask_cors',
         'gevent',

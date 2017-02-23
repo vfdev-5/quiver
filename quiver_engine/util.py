@@ -1,11 +1,14 @@
 from __future__ import absolute_import, division, print_function
 import json
+from os.path import splitext
 import numpy as np
 from keras.preprocessing import image
 import keras.backend as K
 from contextlib import contextmanager
 from quiver_engine.imagenet_utils import preprocess_input, decode_imagenet_predictions
 from os import path
+from flask.json import jsonify
+
 
 def validate_launch(html_base_dir):
     print('Starting webserver from:', html_base_dir)
@@ -16,9 +19,11 @@ def validate_launch(html_base_dir):
     assert path.exists(
         path.join(html_base_dir, 'quiverboard', 'dist', 'index.html')), 'Index.html missing'
 
+        
 def get_evaluation_context():
     return get_evaluation_context_getter()()
 
+    
 def get_evaluation_context_getter():
     if K.backend() == 'tensorflow':
         import tensorflow as tf
@@ -27,6 +32,7 @@ def get_evaluation_context_getter():
     if K.backend() == 'theano':
         return contextmanager(lambda: (yield))
 
+        
 def get_input_config(model):
     '''
         returns a tuple (inputDimensions, numChannels)
@@ -41,6 +47,7 @@ def get_input_config(model):
         model.get_input_shape_at(0)[3]
     )
 
+    
 def decode_predictions(preds, classes, top):
     if not classes:
         print("Warning! you didn't pass your own set of classes for the model therefore imagenet classes are used")
@@ -70,15 +77,21 @@ def deprocess_image(x):
 
     return x
 
-def load_img_scaled(input_path, target_shape, grayscale=False):
-    return np.expand_dims(
-        image.img_to_array(image.load_img(input_path, target_size=target_shape, grayscale=grayscale)) / 255.0,
-        axis=0
-    )
+    
+# def load_img_scaled(input_path, target_shape, grayscale=False):
+    # return np.expand_dims(
+        # image.img_to_array(image.load_img(input_path, target_size=target_shape, grayscale=grayscale)) / 255.0,
+        # axis=0
+    # )
 
 def load_img(input_path, target_shape, grayscale=False):
-    img = image.load_img(input_path, target_size=target_shape, grayscale=grayscale)
-    img_arr = np.expand_dims(image.img_to_array(img), axis=0)
+    _, ext = splitext(input_path)
+    if ext == '.npz':
+        img_arr = np.load(input_path, 'arr0')
+    else:
+        img = image.load_img(input_path, target_size=target_shape, grayscale=grayscale)
+        img_arr = image.img_to_array(img)
+    img_arr = np.expand_dims(img_arr, axis=0)
     if not grayscale:
         img_arr = preprocess_input(img_arr)
     return img_arr
@@ -87,12 +100,15 @@ def load_img(input_path, target_shape, grayscale=False):
 def get_jsonable_obj(obj):
     return json.loads(get_json(obj))
 
+    
 def get_json(obj):
     return json.dumps(obj, default=get_json_type)
 
+    
 def safe_jsonnify(obj):
     return jsonify(get_jsonable_obj(obj))
 
+    
 def get_json_type(obj):
 
     # if obj is any numpy type

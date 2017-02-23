@@ -5,7 +5,7 @@ setup(
     version="0.1.4.1.4",
     author="Jake Bian",
     author_email="jake@keplr.io",
-    description=("Interactive per-layer visualization for convents in keras"),
+    description=("Interactive per-layer visualization for convnets in keras"),
     license='mit',
     packages=find_packages(),
     include_package_data=True,
